@@ -19,13 +19,13 @@ from torch.autograd import Variable
 
 def batch_to_cuda(batch, volatile=False):
     # moves dataset batch on GPU
-
-    q = Variable(batch[0], volatile=volatile, requires_grad=False).cuda()
-    a = Variable(batch[1], volatile=volatile, requires_grad=False).cuda()
-    n_votes = Variable(batch[2], volatile=volatile, requires_grad=False).cuda()
-    i = Variable(batch[4], volatile=volatile, requires_grad=False).cuda()
-    k = Variable(batch[5], volatile=volatile, requires_grad=False).cuda()
-    qlen = list(batch[6])
+    with torch.set_grad_enabled(volatile):
+        q       = Variable(batch[0], requires_grad=False).cuda()
+        a       = Variable(batch[1], requires_grad=False).cuda()
+        n_votes = Variable(batch[2], requires_grad=False).cuda()
+        i       = Variable(batch[4], requires_grad=False).cuda()
+        k       = Variable(batch[5], requires_grad=False).cuda()
+        qlen = list(batch[6])
     return q, a, n_votes, i, k, qlen
 
 
@@ -38,7 +38,7 @@ def save(model, optimizer, ep, epoch_loss, epoch_acc, dir, name):
         'accuracy': epoch_acc,
         'state_dict': model.state_dict(),
         'optimizer': optimizer.state_dict()
-        }
+    }
     torch.save(tbs, os.path.join(dir, name + '.pth.tar'))
 
 
@@ -49,5 +49,5 @@ def total_vqa_score(output_batch, n_votes_batch):
     _, oix = output_batch.data.max(1)
     for i, pred in enumerate(oix):
         count = n_votes_batch[i,pred]
-        vqa_score += min(count.cpu().data[0]/3, 1)
+        vqa_score += min(count.cpu().item()/3, 1)
     return vqa_score

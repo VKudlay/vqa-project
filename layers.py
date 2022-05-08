@@ -85,14 +85,12 @@ class NeighbourhoodGraphConvolution(Module):
 
         # compute pseudo coordinate kernel weights
         weights = self.get_gaussian_weights(neighbourhood_pseudo_coord)
-        weights = weights.view(
-            batch_size*K, neighbourhood_size, self.n_kernels)
+        weights = weights.view(batch_size*K, neighbourhood_size, self.n_kernels)
 
         # compute convolved features
-        neighbourhood_features = neighbourhood_features.view(
-            batch_size*K, neighbourhood_size, -1)
+        neighbourhood_features = neighbourhood_features.contiguous().view(batch_size*K, neighbourhood_size, -1)
         convolved_features = self.convolution(neighbourhood_features, weights)
-        convolved_features = convolved_features.view(-1, K, self.out_feat_dim)
+        convolved_features = convolved_features.contiguous().view(-1, K, self.out_feat_dim)
 
         return convolved_features
 
